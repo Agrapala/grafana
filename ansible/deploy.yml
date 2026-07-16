@@ -45,14 +45,14 @@
   tasks:
     - name: Remove existing node exporter installer
       ansible.builtin.file:
-        path: /tmp/install_node_exporter.sh
+        path: /home/install_node_exporter.sh
         state: absent
-        
+
     - name: Copy node exporter installer
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../install_node_exporter.sh"
-        dest: /tmp/install_node_exporter.sh
+        dest: /home/install_node_exporter.sh
         mode: "0755"
 
     - name: Run node exporter installer
-      ansible.builtin.command: bash /tmp/install_node_exporter.sh
+      ansible.builtin.command: bash /home/install_node_exporter.sh
