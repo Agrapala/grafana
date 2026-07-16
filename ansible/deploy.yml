@@ -43,6 +43,11 @@
   hosts: targets
   become: true
   tasks:
+    - name: Remove existing node exporter installer
+      ansible.builtin.file:
+        path: /tmp/install_node_exporter.sh
+        state: absent
+        
     - name: Copy node exporter installer
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../install_node_exporter.sh"
