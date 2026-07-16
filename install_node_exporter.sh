@@ -14,11 +14,21 @@ URL="https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPOR
 echo "==> Installing Node Exporter v${NODE_EXPORTER_VERSION}..."
 
 # 1. Download & extract
+# 1. Stop existing Node Exporter before upgrade
+if systemctl is-active --quiet node_exporter; then
+    echo "==> Stopping existing Node Exporter..."
+    systemctl stop node_exporter
+fi
+
+# 2. Download & extract
 cd /tmp
 curl -fsSL "$URL" -o node_exporter.tar.gz
 tar xzf node_exporter.tar.gz
-cp node_exporter-${NODE_EXPORTER_VERSION}.${ARCH}/node_exporter /usr/local/bin/
+
+echo "==> Installing binary..."
+cp -f node_exporter-${NODE_EXPORTER_VERSION}.${ARCH}/node_exporter /usr/local/bin/node_exporter
 chmod +x /usr/local/bin/node_exporter
+
 rm -rf node_exporter.tar.gz node_exporter-${NODE_EXPORTER_VERSION}.${ARCH}
 
 # 2. Create dedicated user
