@@ -36,7 +36,10 @@
     {
       "type": "stat",
       "title": "Running services",
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
       "gridPos": {
         "h": 8,
         "w": 8,
@@ -89,7 +92,10 @@
     {
       "type": "stat",
       "title": "Failed services",
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
       "gridPos": {
         "h": 8,
         "w": 8,
@@ -142,7 +148,10 @@
     {
       "type": "table",
       "title": "Running services",
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
       "gridPos": {
         "h": 14,
         "w": 12,
@@ -168,7 +177,10 @@
     {
       "type": "table",
       "title": "Failed services",
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "Prometheus"
+      },
       "gridPos": {
         "h": 14,
         "w": 12,
