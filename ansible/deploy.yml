@@ -1,0 +1,53 @@
+---
+- name: Deploy monitoring stack to the host server
+  hosts: monitoring
+  become: true
+  vars:
+    monitoring_dir: /home/monitoring
+  tasks:
+    - name: Ensure deployment directory exists
+      ansible.builtin.file:
+        path: "{{ monitoring_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Copy compose stack files
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ monitoring_dir }}/{{ item.dest }}"
+        mode: "0644"
+      loop:
+        - { src: "{{ playbook_dir }}/../docker-compose.yml", dest: "docker-compose.yml" }
+        - { src: "{{ playbook_dir }}/../README.md", dest: "README.md" }
+        - { src: "{{ playbook_dir }}/../prometheus/", dest: "prometheus/" }
+        - { src: "{{ playbook_dir }}/../grafana/", dest: "grafana/" }
+        - { src: "{{ playbook_dir }}/../alertmanager/", dest: "alertmanager/" }
+
+    - name: Bring up the monitoring stack
+      ansible.builtin.command: docker compose up -d --remove-orphans
+      args:
+        chdir: "{{ monitoring_dir }}"
+
+    - name: Show running containers
+      ansible.builtin.command: docker compose ps
+      args:
+        chdir: "{{ monitoring_dir }}"
+      register: compose_ps
+      changed_when: false
+
+    - name: Print compose status
+      ansible.builtin.debug:
+        var: compose_ps.stdout_lines
+
+- name: Install node exporter on the target server
+  hosts: targets
+  become: true
+  tasks:
+    - name: Copy node exporter installer
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../install_node_exporter.sh"
+        dest: /tmp/install_node_exporter.sh
+        mode: "0755"
+
+    - name: Run node exporter installer
+      ansible.builtin.command: bash /tmp/install_node_exporter.sh
