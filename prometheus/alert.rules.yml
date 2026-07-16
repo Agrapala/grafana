@@ -1,0 +1,90 @@
+groups:
+  - name: server_alerts
+    rules:
+
+      # ── Uptime / Reachability ─────────────────────────────────
+      - alert: ServerDown
+        expr: up{job="node_exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Server {{ $labels.instance }} is down"
+          description: "Node exporter on {{ $labels.instance }} has been unreachable for more than 1 minute."
+
+      # ── CPU ───────────────────────────────────────────────────
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU on {{ $labels.instance }}"
+          description: "CPU usage is {{ printf \"%.1f\" $value }}% (threshold: 85%) for more than 5 minutes."
+
+      - alert: CriticalCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical CPU on {{ $labels.instance }}"
+          description: "CPU usage is {{ printf \"%.1f\" $value }}% (threshold: 95%)."
+
+      # ── Memory ───────────────────────────────────────────────
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory on {{ $labels.instance }}"
+          description: "Memory usage is {{ printf \"%.1f\" $value }}% (threshold: 80%)."
+
+      - alert: CriticalMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical memory on {{ $labels.instance }}"
+          description: "Memory usage is {{ printf \"%.1f\" $value }}%."
+
+      # ── Disk ──────────────────────────────────────────────────
+      - alert: HighDiskUsage
+        expr: (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk usage on {{ $labels.instance }}"
+          description: "Disk {{ $labels.mountpoint }} is {{ printf \"%.1f\" $value }}% full."
+
+      - alert: CriticalDiskUsage
+        expr: (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}) * 100 > 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk almost full on {{ $labels.instance }}"
+          description: "Disk {{ $labels.mountpoint }} is {{ printf \"%.1f\" $value }}% full."
+
+      # ── Network ───────────────────────────────────────────────
+      - alert: HighNetworkErrors
+        expr: rate(node_network_receive_errs_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Network errors on {{ $labels.instance }}"
+          description: "Interface {{ $labels.device }} is receiving errors."
+
+      # ── Load Average ─────────────────────────────────────────
+      - alert: HighLoadAverage
+        expr: node_load1 > count by(instance) (node_cpu_seconds_total{mode="idle"}) * 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High load average on {{ $labels.instance }}"
+          description: "1-minute load average is {{ printf \"%.2f\" $value }}."
