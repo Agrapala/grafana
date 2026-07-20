@@ -25,12 +25,10 @@ scrape_configs:
       - targets: ["localhost:9090"]
 
   # ── Your monitored hosts ─────────────────────────────────────
-  # Scrape the monitoring host (via the Compose service name) and
-  # the remote target host that Ansible installs Node Exporter on.
+  # Scrape only the server you want to monitor.
   - job_name: "node_exporter"
     static_configs:
       - targets:
-          - "207.180.252.87:9100"
           - "agro.senzmate.com:9100"
         labels:
           group: "contabo-vps"
