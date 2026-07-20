@@ -24,15 +24,14 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
-  # ── Your Contabo servers ──────────────────────────────────────
-  # Add every server IP:9100 here.
-  # Label each with a human-readable name (instance label).
+  # ── Your monitored hosts ─────────────────────────────────────
+  # Scrape the monitoring host (via the Compose service name) and
+  # the remote target host that Ansible installs Node Exporter on.
   - job_name: "node_exporter"
     static_configs:
       - targets:
-          - "207.180.252.87:9100"   # e.g. 45.12.34.10:9100
-          
-          # add more as needed (up to 5)
+          - "207.180.252.87:9100"
+          - "agro.senzmate.com:9100"
         labels:
           group: "contabo-vps"
 
