@@ -9,7 +9,7 @@ global:
   smtp_smarthost: "smtp.gmail.com:587"
   smtp_from: "alerts@yourdomain.com"
   smtp_auth_username: "alerts@yourdomain.com"
-  smtp_auth_password: "your-app-password"   # use Gmail App Password
+  smtp_auth_password: "dfyq hpxk pveh enie"   # use Gmail App Password
   smtp_require_tls: true
 
 route:

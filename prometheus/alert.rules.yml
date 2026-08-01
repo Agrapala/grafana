@@ -88,3 +88,33 @@ groups:
         annotations:
           summary: "High load average on {{ $labels.instance }}"
           description: "1-minute load average is {{ printf \"%.2f\" $value }}."
+
+  - name: service_alerts
+    rules:
+
+      - alert: NginxDown
+        expr: node_systemd_unit_state{name="nginx.service",state="active"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Nginx down on {{ $labels.instance }}"
+          description: "nginx.service is not active. Run: systemctl start nginx"
+
+      - alert: MongodDown
+        expr: node_systemd_unit_state{name="mongod.service",state="active"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MongoDB down on {{ $labels.instance }}"
+          description: "mongod.service is not active. Run: systemctl start mongod"
+
+      - alert: SenzagroDown
+        expr: node_systemd_unit_state{name="senzagro.service",state="active"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Senzagro down on {{ $labels.instance }}"
+          description: "senzagro.service is not active. Run: systemctl start senzagro"
