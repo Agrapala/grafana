@@ -2,7 +2,7 @@
 
 set -e
 
-PROCESS_EXPORTER_VERSION="0.8.3"
+PROCESS_EXPORTER_VERSION="0.8.7"
 ARCH="linux-amd64"
 URL="https://github.com/ncabatoff/process-exporter/releases/download/v${PROCESS_EXPORTER_VERSION}/process-exporter_${PROCESS_EXPORTER_VERSION}_${ARCH}.tar.gz"
 
@@ -20,10 +20,10 @@ curl -fsSL "$URL" -o process-exporter.tar.gz
 tar xzf process-exporter.tar.gz
 
 echo "==> Installing binary..."
-cp -f process-exporter_${PROCESS_EXPORTER_VERSION}_${ARCH}/process-exporter /usr/local/bin/process-exporter
+cp -f process-exporter-${PROCESS_EXPORTER_VERSION}_${ARCH}/process-exporter /usr/local/bin/process-exporter
 chmod +x /usr/local/bin/process-exporter
 
-rm -rf process-exporter.tar.gz process-exporter_${PROCESS_EXPORTER_VERSION}_${ARCH}
+rm -rf process-exporter.tar.gz process-exporter-${PROCESS_EXPORTER_VERSION}_${ARCH}
 
 # 3. Create config file with your services
 echo "==> Creating config file..."
