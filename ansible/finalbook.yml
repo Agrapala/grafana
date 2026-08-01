@@ -51,3 +51,16 @@
 
     - name: Run node exporter installer
       ansible.builtin.command: bash /home/install_node_exporter.sh
+
+- name: Install process exporter on the target server
+  hosts: targets
+  become: true
+  tasks:
+    - name: Copy process exporter installer
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../install_process_exporter.sh"
+        dest: /home/install_process_exporter.sh
+        mode: "0755"
+
+    - name: Run process exporter installer
+      ansible.builtin.command: bash /home/install_process_exporter.sh

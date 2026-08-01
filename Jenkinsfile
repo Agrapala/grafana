@@ -24,7 +24,7 @@ pipeline {
                     #!/bin/bash
                     set -euo pipefail
 
-                    ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
+                    ansible-playbook -i ansible/inventory.ini ansible/finalbook.yml
 
                 '''
 			}
