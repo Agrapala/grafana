@@ -1,33 +1,36 @@
 #!/bin/bash
-
 set -e
 
-PROCESS_EXPORTER_VERSION="0.8.7"
+VERSION="0.8.7"
 ARCH="linux-amd64"
-URL="https://github.com/ncabatoff/process-exporter/releases/download/v${PROCESS_EXPORTER_VERSION}/process-exporter_${PROCESS_EXPORTER_VERSION}_${ARCH}.tar.gz"
+FILENAME="process-exporter-${VERSION}.${ARCH}.tar.gz"
+MONITORING_HOST="207.180.252.87"   # ← your monitoring host IP
+SERVE_PORT="8888"
 
-echo "==> Installing Process Exporter v${PROCESS_EXPORTER_VERSION}..."
+echo "==> Installing Process Exporter v${VERSION} on $(hostname)..."
 
-# 1. Stop existing Process Exporter before upgrade
-if systemctl is-active --quiet process-exporter; then
+# 1. Stop existing if running
+if systemctl is-active --quiet process-exporter 2>/dev/null; then
   echo "==> Stopping existing Process Exporter..."
   systemctl stop process-exporter
 fi
 
-# 2. Download & extract
+# 2. Download from monitoring host
+echo "==> Downloading from http://${MONITORING_HOST}:${SERVE_PORT}/${FILENAME}..."
 cd /tmp
-curl -fsSL "$URL" -o process-exporter.tar.gz
-tar xzf process-exporter.tar.gz
+curl -fsSL "http://${MONITORING_HOST}:${SERVE_PORT}/${FILENAME}" -o ${FILENAME}
+echo "✓  Downloaded"
 
-echo "==> Installing binary..."
-cp -f process-exporter-${PROCESS_EXPORTER_VERSION}_${ARCH}/process-exporter /usr/local/bin/process-exporter
+# 3. Extract & install binary
+tar xzf ${FILENAME}
+cp -f process-exporter-${VERSION}.${ARCH}/process-exporter /usr/local/bin/process-exporter
 chmod +x /usr/local/bin/process-exporter
+rm -rf ${FILENAME} process-exporter-${VERSION}.${ARCH}
+echo "✓  Binary installed"
 
-rm -rf process-exporter.tar.gz process-exporter-${PROCESS_EXPORTER_VERSION}_${ARCH}
-
-# 3. Create config file with your services
-echo "==> Creating config file..."
-cat > /etc/process-exporter.yml <<EOF
+# 4. Create config
+echo "==> Creating config..."
+cat > /etc/process-exporter.yml <<CONF
 process_names:
   - name: "nginx"
     cmdline:
@@ -53,18 +56,15 @@ process_names:
     cmdline:
       - metricbeat
 
-  - name: "node_exporter"
-    cmdline:
-      - node_exporter
-
   - name: "sshd"
     cmdline:
       - sshd
-EOF
+CONF
+echo "✓  Config created"
 
-# 4. Create systemd service
+# 5. Create systemd service
 echo "==> Creating systemd service..."
-cat > /etc/systemd/system/process-exporter.service <<EOF
+cat > /etc/systemd/system/process-exporter.service <<SVC
 [Unit]
 Description=Process Exporter
 Documentation=https://github.com/ncabatoff/process-exporter
@@ -74,37 +74,34 @@ After=network-online.target
 User=root
 Type=simple
 Restart=on-failure
-ExecStart=/usr/local/bin/process-exporter \\
-  --config.path=/etc/process-exporter.yml \\
+ExecStart=/usr/local/bin/process-exporter \
+  --config.path=/etc/process-exporter.yml \
   --web.listen-address=:9256
 
 [Install]
 WantedBy=multi-user.target
-EOF
+SVC
 
-# 5. Open firewall port 9256
+# 6. Open firewall
 echo "==> Opening firewall port 9256..."
 firewall-cmd --permanent --add-port=9256/tcp
 firewall-cmd --reload
 
-# 6. Enable & start service
+# 7. Enable & start
 systemctl daemon-reload
 systemctl enable --now process-exporter
 
-# 7. Verify
+# 8. Verify
 sleep 2
 if systemctl is-active --quiet process-exporter; then
   echo ""
-  echo "✓  Process Exporter is running on port 9256"
+  echo "✓  Process Exporter running on port 9256"
   echo ""
-  echo "==> Verifying metrics..."
+  echo "==> Detected service metrics:"
   curl -s http://localhost:9256/metrics | grep namedprocess_namegroup_num_procs | head -10
   echo ""
-  echo "✓  Now add this server's IP to prometheus.yml:"
-  echo "     - job_name: \"process-exporter\""
-  echo "       static_configs:"
-  echo "         - targets:"
-  echo "             - \"$(hostname -I | awk '{print $1}'):9256\""
+  echo "✓  Add to prometheus.yml on monitoring host:"
+  echo "     - \"$(hostname -I | awk '{print $1}'):9256\""
 else
   echo "✗  Something went wrong. Check: journalctl -u process-exporter -n 30"
   exit 1

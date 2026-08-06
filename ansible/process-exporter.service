@@ -1,0 +1,12 @@
+[Unit]
+Description=Process Exporter
+After=network-online.target
+
+[Service]
+User=root
+Type=simple
+Restart=on-failure
+ExecStart=/usr/local/bin/process-exporter   --config.path=/etc/process-exporter.yml   --web.listen-address=:9256
+
+[Install]
+WantedBy=multi-user.target

@@ -118,3 +118,5 @@ groups:
         annotations:
           summary: "Senzagro down on {{ $labels.instance }}"
           description: "senzagro.service is not active. Run: systemctl start senzagro"
+
+
